@@ -20,12 +20,12 @@ import java.util.List;
 /**
  * Created by vijaykumarn on 01-May-15.
  */
-public class CustomListAdapter extends ArrayAdapter<ListItemModel>{
+public class CustomListAdapter extends ArrayAdapter<String>{
 
-    ArrayList<ListItemModel> listItems;
+    ArrayList<String> listItems;
     Context context;
 
-    public CustomListAdapter(Context context, ArrayList<ListItemModel> objects) {
+    public CustomListAdapter(Context context, ArrayList<String> objects) {
         super(context, R.layout.todo_item_row_layout, objects);
         this.context = context;
         this.listItems = objects;
@@ -42,21 +42,16 @@ public class CustomListAdapter extends ArrayAdapter<ListItemModel>{
         convertView = layoutInflater.inflate(R.layout.todo_item_row_layout, parent, false);
 
         TextView editText = (TextView)convertView.findViewById(R.id.editText);
-        editText.setText(listItems.get(position).getText());
+        editText.setText(listItems.get(position));
 
         final CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
-        if(listItems.get(position).getCheckValue() == 1){
-            cb.setChecked(true);
-        }
-        else{
-            cb.setChecked(false);
-        }
 
         //click event listener for checkbox
         cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
+                    TodoMain.removeTodo(listItems.get(position));
                     listItems.remove(position);
                     TodoMain.models = listItems;
                     notifyDataSetChanged();
