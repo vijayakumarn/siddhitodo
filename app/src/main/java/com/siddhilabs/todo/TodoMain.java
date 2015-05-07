@@ -4,8 +4,11 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -31,11 +34,15 @@ public class TodoMain extends AppCompatActivity {
     static ArrayList<String> models = new ArrayList<String>();
     CustomListAdapter listAdapter = null;
     static SQLiteDatabase appDb = null;
+    static SharedPreferences sharedPreferences = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_main);
+
+        //set sharedpreferences
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         //Get the list view from layout
         todoList = (ListView) findViewById(R.id.listView);
@@ -53,6 +60,13 @@ public class TodoMain extends AppCompatActivity {
         });
 
 
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        buildList();
+        listAdapter.notifyDataSetChanged();
     }
 
     private void showAddTodoDialog(){
@@ -93,18 +107,25 @@ public class TodoMain extends AppCompatActivity {
     static void buildList(){
         models.clear();
         String [] projection = {TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT};
+        String selection = null;
+        boolean showcompletedPref = sharedPreferences.getBoolean("showcompleted", false);
+        if(!showcompletedPref){
+            selection = TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE + " = 0 OR "
+            + TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE + " IS NULL";
+        }
         Cursor c = appDb.query(
                 TodoDBContract.TodoTable.TABLE_NAME,
                 projection,
-                null,
+                selection,
                 null,
                 null,
                 null,
                 null
         );
         c.moveToFirst();
-        for(int i=0;i<c.getCount();i++){
+        while(!c.isAfterLast()){
             models.add(c.getString(c.getColumnIndex(TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT)));
+            c.moveToNext();
         }
     }
 
@@ -125,6 +146,7 @@ public class TodoMain extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, TodoPreferencesActivity.class));
             return true;
         }
 
@@ -147,5 +169,18 @@ public class TodoMain extends AppCompatActivity {
         String selection = TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT + " LIKE ?";
         String[] selectionArgs = {todoText};
         appDb.delete(TodoDBContract.TodoTable.TABLE_NAME, selection, selectionArgs);
+    }
+
+    static int updateIsTodoComplete(int i, String todotext){
+        ContentValues values = new ContentValues();
+        values.put(TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE, i);
+
+        String selection = TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT + " LIKE ?";
+        String [] selectionArgs = {todotext};
+
+        int count = appDb.update(TodoDBContract.TodoTable.TABLE_NAME, values,
+                selection, selectionArgs);
+
+        return count;
     }
 }

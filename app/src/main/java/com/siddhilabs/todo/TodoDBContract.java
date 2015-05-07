@@ -13,5 +13,6 @@ public final class TodoDBContract {
     public static abstract class TodoTable implements BaseColumns{
         public static final String TABLE_NAME="todo";
         public static final String COLUMN_NAME_TODO_TEXT="todotext";
+        public static final String COLUMN_NAME_IS_TODO_COMPLETE="istodocomplete";
     }
 }

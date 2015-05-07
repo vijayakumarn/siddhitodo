@@ -10,12 +10,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class TodoDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "siddhitodo.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private static final String SQL_CREATE_TABLE =
             "CREATE TABLE " + TodoDBContract.TodoTable.TABLE_NAME + " (" +
                     TodoDBContract.TodoTable._ID + " INTEGER PRIMARY KEY " +
-                    ", " + TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT + " TEXT" +
+                    ", " + TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT + " TEXT " +
+                    ", " + TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE + " INTEGER" +
                     ")";
 
     private static final String SQL_DELETE_TABLE =

@@ -9,6 +9,7 @@
     <string name="button_text_ok">Ok</string>
     <string name="button_text_cancel">Cancel</string>
     <string name="type_todo_text">Enter your todo...</string>
+    <string name="pref_title">Show Completed</string>
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

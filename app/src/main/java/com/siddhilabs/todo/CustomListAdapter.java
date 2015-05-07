@@ -2,6 +2,7 @@ package com.siddhilabs.todo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +42,7 @@ public class CustomListAdapter extends ArrayAdapter<String>{
         LayoutInflater layoutInflater = ((Activity)context).getLayoutInflater();
         convertView = layoutInflater.inflate(R.layout.todo_item_row_layout, parent, false);
 
-        TextView editText = (TextView)convertView.findViewById(R.id.editText);
+        final TextView editText = (TextView)convertView.findViewById(R.id.editText);
         editText.setText(listItems.get(position));
 
         final CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
@@ -51,11 +52,18 @@ public class CustomListAdapter extends ArrayAdapter<String>{
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    TodoMain.removeTodo(listItems.get(position));
-                    listItems.remove(position);
-                    TodoMain.models = listItems;
-                    notifyDataSetChanged();
+                    //TodoMain.removeTodo(listItems.get(position));
+                    //listItems.remove(position);
+                    //TodoMain.models = listItems;
+                    //notifyDataSetChanged();
                     //notifyDataSetInvalidated();
+                    editText.setPaintFlags(editText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    TodoMain.updateIsTodoComplete(1, editText.getText().toString());
+                }
+                else{
+                    //un-strike through
+                    editText.setPaintFlags(0);
+                    TodoMain.updateIsTodoComplete(0, editText.getText().toString());
                 }
             }
         });

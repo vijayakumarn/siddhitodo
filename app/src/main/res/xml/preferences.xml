@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:title="@string/pref_title"
+        android:key="showcompleted"
+        android:summary="Show Completed"
+        android:defaultValue="false"/>
+</PreferenceScreen>
