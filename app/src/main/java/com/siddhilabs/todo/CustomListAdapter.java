@@ -59,17 +59,11 @@ public class CustomListAdapter extends ArrayAdapter<TodoItemModel>{
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    //TodoMain.removeTodo(listItems.get(position));
-                    //listItems.remove(position);
-                    //TodoMain.models = listItems;
-                    //notifyDataSetChanged();
-                    //notifyDataSetInvalidated();
                     editText.setPaintFlags(editText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                     TodoMain.updateIsTodoComplete(1, editText.getText().toString());
 
                     if(!showCompleted){
                         listItems.remove(position);
-                        //TodoMain.modelList.remove(position);
                         notifyDataSetChanged();
                     }
                 }
