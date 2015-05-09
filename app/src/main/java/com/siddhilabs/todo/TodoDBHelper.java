@@ -35,4 +35,10 @@ public class TodoDBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_DELETE_TABLE);
         onCreate(db);
     }
+
+    public static void closeDB(SQLiteDatabase db){
+        if(db.isOpen()){
+            db.close();
+        }
+    }
 }

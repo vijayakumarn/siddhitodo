@@ -30,11 +30,14 @@ import java.util.List;
 
 public class TodoMain extends AppCompatActivity {
 
-    ListView todoList;
-    static ArrayList<String> models = new ArrayList<String>();
-    CustomListAdapter listAdapter = null;
+    private ListView todoList;
+    private CustomListAdapter listAdapter = null;
+    private TodoDBHelper dbHelper = null;
+
+    static ArrayList<TodoItemModel> modelList = new ArrayList<TodoItemModel>();
     static SQLiteDatabase appDb = null;
     static SharedPreferences sharedPreferences = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +47,11 @@ public class TodoMain extends AppCompatActivity {
         //set sharedpreferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //Get the list view from layout
+        //Get the list view from layout & set the adapter
         todoList = (ListView) findViewById(R.id.listView);
         appDb = getAppDb(getApplicationContext());
-        buildList();
-        listAdapter = new CustomListAdapter(this, models);
+        buildTodoItemModelList();
+        listAdapter = new CustomListAdapter(this, modelList);
         todoList.setAdapter(listAdapter);
 
         Button addButton = (Button) findViewById(R.id.button);
@@ -65,70 +68,15 @@ public class TodoMain extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
-        buildList();
+        buildTodoItemModelList();
         listAdapter.notifyDataSetChanged();
     }
 
-    private void showAddTodoDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.add_todo_dialog_title);
-
-        //inflate the prompt layout
-        LayoutInflater li = LayoutInflater.from(this);
-        View promptView = li.inflate(R.layout.enter_todo, null);
-        final EditText editText = (EditText) promptView.findViewById(R.id.editText2);
-
-        builder.setView(promptView);
-
-
-        builder.setPositiveButton(R.string.button_text_ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //save the todo
-                String inputText = editText.getText().toString();
-                persistTodo(inputText);
-                models.add(inputText);
-                listAdapter.notifyDataSetChanged();
-            }
-        });
-        builder.setNegativeButton(R.string.button_text_cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //do cancel operation.
-                dialog.cancel();
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
+    @Override
+    protected void onDestroy() {
+        TodoDBHelper.closeDB(appDb);
+        super.onDestroy();
     }
-
-
-    static void buildList(){
-        models.clear();
-        String [] projection = {TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT};
-        String selection = null;
-        boolean showcompletedPref = sharedPreferences.getBoolean("showcompleted", false);
-        if(!showcompletedPref){
-            selection = TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE + " = 0 OR "
-            + TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE + " IS NULL";
-        }
-        Cursor c = appDb.query(
-                TodoDBContract.TodoTable.TABLE_NAME,
-                projection,
-                selection,
-                null,
-                null,
-                null,
-                null
-        );
-        c.moveToFirst();
-        while(!c.isAfterLast()){
-            models.add(c.getString(c.getColumnIndex(TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT)));
-            c.moveToNext();
-        }
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -153,9 +101,80 @@ public class TodoMain extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void showAddTodoDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        //builder.setTitle(R.string.add_todo_dialog_title);
+
+        //inflate the prompt layout
+        LayoutInflater li = LayoutInflater.from(this);
+        View promptView = li.inflate(R.layout.enter_todo, null);
+        final EditText editText = (EditText) promptView.findViewById(R.id.editText2);
+
+        builder.setView(promptView);
+
+
+        builder.setPositiveButton(R.string.button_text_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //save the todo
+                String inputText = editText.getText().toString();
+                persistTodo(inputText);
+                modelList.add(new TodoItemModel(inputText, 0));
+                listAdapter.notifyDataSetChanged();
+            }
+        });
+        builder.setNegativeButton(R.string.button_text_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //do cancel operation.
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    static void buildTodoItemModelList(){
+        modelList.clear();
+        String [] projection = {TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT,
+                TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE};
+        String selection = null;
+        boolean showcompletedPref = sharedPreferences.getBoolean("showcompleted", false);
+        if(!showcompletedPref){
+            selection = TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE + " = 0 OR "
+                    + TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE + " IS NULL";
+        }
+        Cursor c = appDb.query(
+                TodoDBContract.TodoTable.TABLE_NAME,
+                projection,
+                selection,
+                null,
+                null,
+                null,
+                null
+        );
+        c.moveToFirst();
+        TodoItemModel itemModel = null;
+        while(!c.isAfterLast()){
+            String todoText = c.getString(c.getColumnIndex(TodoDBContract.TodoTable.COLUMN_NAME_TODO_TEXT));
+            Integer completedFlag = c.getInt(c.getColumnIndex(TodoDBContract.TodoTable.COLUMN_NAME_IS_TODO_COMPLETE));
+
+            itemModel = new TodoItemModel(todoText, completedFlag);
+            modelList.add(itemModel);
+
+            c.moveToNext();
+        }
+    }
+
     SQLiteDatabase getAppDb(Context context){
-        TodoDBHelper dbHelper = new TodoDBHelper(context);
-        return dbHelper.getWritableDatabase();
+        if(dbHelper == null){
+            dbHelper = new TodoDBHelper(context);
+            return dbHelper.getWritableDatabase();
+        }
+        else{
+            return dbHelper.getWritableDatabase();
+        }
     }
 
     void persistTodo(String todoText){

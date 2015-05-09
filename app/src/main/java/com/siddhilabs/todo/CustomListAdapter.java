@@ -21,12 +21,12 @@ import java.util.List;
 /**
  * Created by vijaykumarn on 01-May-15.
  */
-public class CustomListAdapter extends ArrayAdapter<String>{
+public class CustomListAdapter extends ArrayAdapter<TodoItemModel>{
 
-    ArrayList<String> listItems;
+    ArrayList<TodoItemModel> listItems;
     Context context;
 
-    public CustomListAdapter(Context context, ArrayList<String> objects) {
+    public CustomListAdapter(Context context, ArrayList<TodoItemModel> objects) {
         super(context, R.layout.todo_item_row_layout, objects);
         this.context = context;
         this.listItems = objects;
@@ -34,7 +34,7 @@ public class CustomListAdapter extends ArrayAdapter<String>{
 
     @Override
     public int getCount() {
-        return TodoMain.models.size();
+        return TodoMain.modelList.size();
     }
 
     @Override
@@ -43,10 +43,17 @@ public class CustomListAdapter extends ArrayAdapter<String>{
         convertView = layoutInflater.inflate(R.layout.todo_item_row_layout, parent, false);
 
         final TextView editText = (TextView)convertView.findViewById(R.id.editText);
-        editText.setText(listItems.get(position));
+        editText.setText(listItems.get(position).getText());
+        Integer completedFlag = listItems.get(position).getCheckValue();
+        final boolean showCompleted = (completedFlag != null && completedFlag == 1);
+        if(showCompleted){
+            editText.setPaintFlags(editText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        }
 
         final CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
-
+        if(showCompleted){
+            cb.setChecked(true);
+        }
         //click event listener for checkbox
         cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -59,6 +66,12 @@ public class CustomListAdapter extends ArrayAdapter<String>{
                     //notifyDataSetInvalidated();
                     editText.setPaintFlags(editText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                     TodoMain.updateIsTodoComplete(1, editText.getText().toString());
+
+                    if(!showCompleted){
+                        listItems.remove(position);
+                        //TodoMain.modelList.remove(position);
+                        notifyDataSetChanged();
+                    }
                 }
                 else{
                     //un-strike through

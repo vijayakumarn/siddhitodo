@@ -17,7 +17,9 @@
         android:inputType="textMultiLine"
         android:ems="10"
         android:id="@+id/editText"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:textSize="17dp"
+        android:layout_marginBottom="7dp"/>
 
     <!--<CheckedTextView
         android:layout_width="wrap_content"
