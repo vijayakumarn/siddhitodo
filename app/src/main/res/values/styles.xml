@@ -2,17 +2,13 @@
 
     <!-- Base application theme. -->
     <style name="MyMaterialTheme" parent="MyMaterialTheme.Base">
-        <!-- Customize your theme here. -->
-        <!--<item name="actionBarStyle">@style/MyActionBarStyle</item>-->
+
     </style>
 
-    <style name="MyMaterialTheme.Base" parent="Theme.AppCompat.Light">
-        <item name="colorPrimary">@color/material_blue_primary</item>
+    <style name="MyMaterialTheme.Base" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/material_red_primary</item>
         <item name="colorPrimaryDark">@color/material_red_dark</item>
         <item name="colorAccent">@color/colorAccent</item>
-    </style>
-    <style name="MyActionBarStyle">
-        <item name="actionMenuTextColor">@color/coloractionbartext</item>
     </style>
 
 </resources>
